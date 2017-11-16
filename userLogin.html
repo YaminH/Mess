@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="jquery-3.2.1.min.js"></script>
+    <title>留言板登陆</title>
+</head>
+<body background="images/bj.jpg" style=" background-repeat:no-repeat ;background-size:100% 100%; background-attachment: fixed;">
+<form id="loginForm" style="margin:250px 180px 300px 400px" >
+    用户名：<input id="user_name" type="text" name="user_name"><br/>
+    密&emsp;码：<input id="pass_word" type="password" name="pass_word"><br/>
+    <input type="hidden" name="action" value="userlogin">
+    <button type="button" onclick="jsLogin()">登陆</button>
+    <button type="button" onclick="jsRegister()">注册</button>
+</form>
+<script type="text/javascript">
+    function jsLogin() {
+        var name = document.getElementById("user_name").value;
+        var pass = document.getElementById("pass_word").value;
+        if(name == ""){
+            alert("用户名不能为空");
+        }else{
+            if(pass == ""){
+                alert("密码不能为空");
+            }else{
+                $.ajax({
+                    type:"POST",
+                    url:"index.php",
+                    data:$('#loginForm').serialize(),
+                    success:function(data){
+                        if(data=="success"){
+                            location.href="index.php?action=gotolist";
+                        }else{
+                            alert(data);
+                        }
+                    }
+                });
+            }
+        }
+    }
+    function jsRegister(){
+        location.href="index.php?action=gotorig";
+//        location.href='userRigister.html';
+    }
+</script>
+</body>
+</html>

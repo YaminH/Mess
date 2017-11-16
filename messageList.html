@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="jquery-3.2.1.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="messList.css">
+    <title>留言板</title>
+</head>
+<body background="images/bj.jpg" style=" background-repeat:no-repeat ;background-size:100% 100%; background-attachment: fixed;">
+
+<div id="praent">
+
+    <div id="npub_but">
+        <form id="newMessForm" >
+            <div style="text-align: left; font-size:24px" >
+                <?php echo $_SESSION['user_name']?>：欢迎来到留言板
+            </div>
+            <textarea type="text" id="new_mess" name="new_mess"cols='80' rows='5'></textarea>
+        </form>
+        <button onclick="publish()">发表</button>
+    </div>
+    <div id="mlist">
+    </div><br/>
+    <button type="button" onclick="prePage()">上一页</button>
+    <button type="button" onclick="nextPage()">下一页</button>
+</div>
+
+<script type="text/javascript">
+    $("#mlist").load("index.php?action=show");
+    function publish(){
+        var send_data={'action':'post','new_mess':document.getElementById("new_mess").value};
+        $.ajax({
+            type:"POST",
+            url:"index.php",
+            data:send_data,
+            success:function(data){
+                if(data!='error'){
+                    document.getElementById("mlist").innerHTML=data;
+                    document.getElementById("new_mess").value="";
+                }else{
+                    alert("请重新输入！");
+                }
+            }
+        });
+    }
+
+    function inform(mess_id){
+        var send_data={'action':'inform','mess_id':mess_id};
+        $.ajax({
+            type:"POST",
+            url:"index.php",
+            data:send_data,
+            success:function(data){
+                if(data!='error'){
+//                   window.location.href='messageList.html';
+                     document.getElementById("mlist").innerHTML=data;
+                }else{
+                    alert("请重新操作！");
+                }
+            }
+        });
+    }
+
+    function editMess(user_id,mess_id){
+        var send_data={'action':'isCurUser','user_id':user_id,'mess_id':mess_id};
+        $.ajax({
+            type:"post",
+            url:"index.php",
+            data:send_data,
+            success:function (data) {
+                if(data=='false'){
+                    alert("不能编辑非本人留言");
+                }else if(data=='001'){
+                    alert("请登录");
+                    window.location.href='userLogin.html';
+                }else {
+                    document.getElementById(mess_id).removeAttribute('disabled');
+                }
+            }
+        });
+
+    }
+
+    function saveMess(mess_id) {
+        if(document.getElementById(mess_id).disabled){
+            alert("未编辑");
+        }else{
+            var send_data={'action':'edit_save', 'mess_id':mess_id,'mess_content':document.getElementById(mess_id).value};
+            $.ajax({
+                type:"POST",
+                url:"index.php",
+                data:send_data,
+                success:function(data){
+                    if(data=='001'){
+                        alert("非法进入,请先登录！");
+                    }else if(data=='003'){
+                        alert("更新失败");
+                    }else{
+                        document.getElementById(mess_id).disabled='disabled';
+                        document.getElementById("mlist").innerHTML=data;
+                    }
+                }
+            });
+        }
+    }
+
+    function subRes(mess_id) {
+        var send_data={'action':'res','mess_id':mess_id,'ap_mess_content':document.getElementById("ap_mess_content").value};
+        $.ajax({
+            type:"POST",
+            url:"index.php",
+            data:send_data,
+            success:function(data){
+                if(data=='001'){
+                    alert("非法进入，请先登陆");
+                    window.location.href='userLogin.html';
+                }else if(data=='003'){
+                    alert("回复失败");
+                }else{
+                    document.getElementById("mlist").innerHTML=data;
+                }
+            }
+        });
+    }
+
+    function deleteMess(user_id,mess_id) {
+        var send_data={'action':'delete','user_id':user_id,'mess_id':mess_id};
+        $.ajax({
+            type:"POST",
+            url:"index.php",
+            data:send_data,
+            success:function(data){
+                if(data=='001'){
+                    alert("非法进入,请先登录！");
+                }else if(data=='002'){
+                    alert("非本人留言，不能删除");
+                }else if(data=='003'){
+                    alert("删除失败");
+                }else{
+                    alert("删除成功");
+                    document.getElementById("mlist").innerHTML=data;
+                }
+            }
+        });
+    }
+    
+    function prePage() {
+        var send_data={'curPage':(parseInt(document.getElementById("curPage").value)-1),'action':'show'};
+        $.ajax({
+            type:"POST",
+            url:"index.php",
+            data:send_data,
+            success:function(data){
+                if(data=='first'){
+                    alert("已经是首页了");
+                }else{
+                    document.getElementById("mlist").innerHTML=data;
+                }
+            }
+        });
+    }
+    
+    function nextPage() {
+        var send_data={'curPage':(parseInt(document.getElementById("curPage").value)+1),'action':'show'};
+        $.ajax({
+            type:"POST",
+            url:"index.php",
+            data:send_data,
+            success:function(data){
+                if(data=='last'){
+                    alert("已经到最后了");
+                }else{
+//                    $("#mlist").reload("../controller/GetMessList.php");
+                    document.getElementById("mlist").innerHTML=data;
+//                    $("#mlist").innerHTML=data;
+                }
+            }
+        });
+    }
+</script>
+</body>
+</html>
