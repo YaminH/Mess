@@ -2,39 +2,84 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <script src="bootstrap/js/bootstrap.min.js"></script>
     <script src="jquery-3.2.1.min.js"></script>
     <title>用户注册</title>
 </head>
-<body background="images/bj.jpg" style=" background-repeat:no-repeat ;background-size:100% 100%; background-attachment: fixed;">
-<form style="margin:250px 180px 0px 400px" action="index.php?action=upload_file" method="post" enctype="multipart/form-data" >
-    头像：<input type="file" name="image" id="image" />
-    <input type="submit" name="submit" value="上传" />
-</form><br/>
-<form id="regForm"  style="margin:0px 180px 200px 400px">
-    昵称：<input type="text" name="user_name"><br/>
-    姓名：<input type="text" name="user_real_name"><br/>
-    密码：<input type="password" name="password"><br/>
-    城市：<input type="text" name="city"><br/>
-    学校：<input type="text" name="school"><br/>
+<body style="padding: 100px 100px 10px;" background="images/bg0.jpg" style=" background-repeat:no-repeat ;background-size:100% 100%; background-attachment: fixed;" >
+<form role="form" action="index.php?action=upload_file" method="post" enctype="multipart/form-data" >
+    <div class="form-group">
+        <label for="image">头像</label>
+        <input type="file" id="image" name="image">
+    </div>
+    <input class="btn btn-default" type="submit" name="submit" value="上传" />
+</form>
+<form  id="regForm" role="form">
+    <div class="row ">
+        <div class="col-lg-5">
+            <label >昵称*</label>
+            <input type="text"  class="form-control" name="user_name" id="user_name" required
+                   placeholder="请输入昵称">
+        </div>
+    </div>
+    <div class="row ">
+        <div class="col-lg-5">
+            <label >姓名</label>
+            <input type="text" class="form-control" name="user_real_name"
+                   placeholder="请输入姓名">
+        </div>
+    </div>
+    <div class="row ">
+        <div class="col-lg-5">
+            <label >密码*</label>
+            <input type="password" class="form-control"  name="password" id="password" required
+                   placeholder="请输入密码">
+        </div>
+    </div>
+    <div class="row ">
+        <div class="col-lg-5">
+            <label >城市</label>
+            <input type="text" class="form-control" name="city"
+                   placeholder="请输入城市">
+        </div>
+    </div>
+    <div class="row ">
+        <div class="col-lg-5">
+            <label >学校</label>
+            <input type="text" class="form-control" name="school"
+                   placeholder="请输入学校">
+        </div>
+    </div>
     <input type="hidden" name="action" value="register">
-    <button type="button" onclick="register()">提交</button>
+    <button type="button" class="btn btn-default" onclick="register()">提交</button>
 </form>
 
 <script>
 function register() {
-    $.ajax({
-        type:"POST",
-        url:"index.php",
-        data:$('#regForm').serialize(),
-        success:function(data){
-            if(data=="success"){
-                alert('注册成功');
-                location.href='index.php?action=login';
-            }else{
-                alert(data);
+    var user_name=document.getElementById('user_name').value;
+    var password=document.getElementById('password').value;
+    if(user_name==''){
+        alert('昵称不能为空');
+    }else if(password==''){
+        alert('密码不能为空');
+    }else {
+        $.ajax({
+            type:"POST",
+            url:"index.php",
+            data:$('#regForm').serialize(),
+            success:function(data){
+                if(data=="success"){
+                    alert('注册成功');
+                    location.href='index.php?action=login';
+                }else{
+                    alert(data);
+                }
             }
-        }
-    });
+        });
+    }
 }
 </script>
 </body>

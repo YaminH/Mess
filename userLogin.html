@@ -2,16 +2,33 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <!--为了让 Bootstrap 开发的网站对移动设备友好，确保适当的绘制和触屏缩放-->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="bootstrap/css/bootstrap.min.css" rel="stylesheet">
+    <script src="bootstrap/js/bootstrap.min.js"></script>
     <script src="jquery-3.2.1.min.js"></script>
     <title>留言板登陆</title>
 </head>
-<body background="images/bj.jpg" style=" background-repeat:no-repeat ;background-size:100% 100%; background-attachment: fixed;">
-<form id="loginForm" style="margin:250px 180px 300px 400px" >
-    用户名：<input id="user_name" type="text" name="user_name"><br/>
-    密&emsp;码：<input id="pass_word" type="password" name="pass_word"><br/>
+<body style="padding: 100px 100px 10px;" background="images/bg0.jpg" style=" background-repeat:no-repeat ;background-size:100% 100%; background-attachment: fixed;">
+<form id="loginForm" role="form" class="container col-xs-6 col-md-offset-3">
+    <div class="row ">
+        <div class="col-lg-5">
+            <label >用户名</label>
+            <input type="text" class="form-control" id="user_name" name="user_name"
+                   placeholder="请输入用户名">
+        </div>
+    </div>
+    <div class="row ">
+        <div class="col-lg-5">
+            <label >密码</label>
+            <input type="password" class="form-control" id="pass_word" name="pass_word"
+                   placeholder="请输入密码">
+        </div>
+    </div>
     <input type="hidden" name="action" value="userlogin">
-    <button type="button" onclick="jsLogin()">登陆</button>
-    <button type="button" onclick="jsRegister()">注册</button>
+    <button type="button" class="btn btn-default" onclick="jsLogin()">提交</button>
+    <button type="button" class="btn btn-default" onclick="jsRegister()">注册</button>
 </form>
 <script type="text/javascript">
     function jsLogin() {
@@ -40,7 +57,6 @@
     }
     function jsRegister(){
         location.href="index.php?action=gotorig";
-//        location.href='userRigister.html';
     }
 </script>
 </body>
