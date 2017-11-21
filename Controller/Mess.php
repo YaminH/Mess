@@ -8,18 +8,21 @@
 
 class Mess  //留言
 {
-    private $id;
-    private  $content;
+    protected $id;
+    protected  $content;
 
     public function setId($id){
         $this->id=$id;
     }
+
     public function setContent($newContent){
         $this->content=$newContent;
     }
+
     public function getId(){
         return $this->id;
     }
+
     public function getContent(){
         return $this->content;
     }
@@ -114,7 +117,10 @@ class Mess  //留言
         // TODO: Implement deleteContent() method.
         $mess=new Model('table_message');
         $where=array('mess_id'=>$this->getId());
+        $reply=new Rmess();
+        $reply->setParentId($this->getId());
         $result=$mess->delete($where);
+        $reply->deleteContentByParentId();
         if($result){
             return array('success'=>true,'message'=>'删除成功');
         } else {
@@ -166,5 +172,26 @@ class Mess  //留言
 //        }else{
 //            return array('success'=>false,'message'=>'回复失败');
 //        }
+    }
+
+    public function sedreplyContent($reply_id,$ap_mess_content){
+        $data=[
+            'ap_mess_id'=>getUniId(),
+            'ap_parent_id'=>$this->getId(),
+            'ap_mess_content'=>$ap_mess_content,
+            'ap_user_id'=>$_SESSION['user_id'],
+            'ap_user_name'=>$_SESSION['user_name'],
+            'creat_time'=>date('Y-m-d H:i:s'),
+            'operate_time'=>date('Y-m-d H:i:s'),
+            'audit'=>0,
+            'pid'=>$reply_id,
+        ];
+        $mess=new Model('table_append_mess');
+        $result=$mess->insert($data);
+        if($result){
+            return array('success'=>true,'message'=>'回复成功');
+        }else{
+            return array('success'=>false,'message'=>'回复失败');
+        }
     }
 }

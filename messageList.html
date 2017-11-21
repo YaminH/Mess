@@ -68,9 +68,10 @@
 
     function editMess(mess_id){
         document.getElementById(mess_id).removeAttribute('disabled');
-        document.getElementById("button_group").innerHTML="<button type=\"button\" class=\"btn btn-default\" onclick=\"saveMess("+mess_id+")\">保存</button> " +
-            "<button type=\"button\" class=\"btn btn-default\" onclick=\"deleteMess("+mess_id+")\">删除</button>";
-
+//        document.getElementById("button_group").innerHTML="<button type=\"button\" class=\"btn btn-default\" onclick=\"saveMess("+mess_id+")\">保存</button> " +
+//            "<button type=\"button\" class=\"btn btn-default\" onclick=\"deleteMess("+mess_id+")\">删除</button>";
+        document.getElementById("button_group").innerHTML="<a onclick=\"saveMess("+mess_id+")\"> <span class=\"glyphicon glyphicon-credit-card\"></span></a>"+
+            "<a onclick=\"deleteMess(\"+mess_id+\")\"><span class=\"glyphicon glyphicon-trash\"></span></a>";
     }
 
     function saveMess(mess_id) {
@@ -88,8 +89,10 @@
                     }else if(data=='003'){
                         alert("更新失败");
                     }else{
-                        document.getElementById("button_group").innerHTML="<button type=\"button\" class=\"btn btn-default\" onclick=\"editMess("+mess_id+")\">编辑</button>" +
-                            "<button type=\"button\" class=\"btn btn-default\" onclick=\"deleteMess("+mess_id+")\">删除</button>";
+//                        document.getElementById("button_group").innerHTML="<button type=\"button\" class=\"btn btn-default\" onclick=\"editMess("+mess_id+")\">编辑</button>" +
+//                            "<button type=\"button\" class=\"btn btn-default\" onclick=\"deleteMess("+mess_id+")\">删除</button>";
+                        document.getElementById("button_group").innerHTML="<a onclick=\"editMess(\"+mess_id+\")\">  <span class=\"glyphicon glyphicon-pencil\"></span></a>"+
+                                "<a onclick=\"deleteMess(\"+mess_id+\")\" > <span class=\"glyphicon glyphicon-trash\"></span> </a>";
                         document.getElementById(mess_id).disabled='disabled';
                         document.getElementById("mlist").innerHTML=data;
 
@@ -100,7 +103,8 @@
     }
 
     function subRes(mess_id) {
-        var send_data={'action':'res','mess_id':mess_id,'ap_mess_content':document.getElementById("ap_mess_content").value};
+        var id='rv'+mess_id;
+        var send_data={'action':'res','mess_id':mess_id,'ap_mess_content':document.getElementById(id).value};
         $.ajax({
             type:"POST",
             url:"index.php",
@@ -131,6 +135,55 @@
                     alert("删除失败");
                 }else{
                     alert("删除成功");
+                    document.getElementById("mlist").innerHTML=data;
+                }
+            }
+        });
+    }
+
+    function sedrev(parent_id,mess_id) {
+        if(document.getElementById('sedrevForm')){
+            alert('前先回复已经打开的编辑框');
+        }else {
+            document.getElementById(mess_id).innerHTML="<form id='sedrevForm' role='form'>" +
+                "<textarea class=\"form-control\" id='sedrev' name='sedrev' cols='80' rows='1'></textarea>" +
+                "<button type=\"button\" class=\"btn btn-default\" onclick=\"sedrevsave("+parent_id+','+mess_id+")\">提交</button>" +
+                "</form>";
+        }
+    }
+
+    function sedrevsave(parent_id,mess_id){
+        var send_data={'action':'sedrevsave','mess_id':mess_id,'parent_id':parent_id,'ap_mess_content':document.getElementById('sedrev').value};
+        $.ajax({
+            type:"POST",
+            url:"index.php",
+            data:send_data,
+            success:function(data){
+                if(data=='001'){
+                    alert("非法进入，请先登陆");
+                    window.location.href='userLogin.html';
+                }else if(data=='003'){
+                    alert("回复失败");
+                }else{
+                    document.getElementById("mlist").innerHTML=data;
+                }
+            }
+        });
+    }
+
+    function deleteRevMess(mess_id) {
+        var send_data={'action':'deleteRevMess','mess_id':mess_id};
+        $.ajax({
+            type:"POST",
+            url:"index.php",
+            data:send_data,
+            success:function(data){
+                if(data=='001'){
+                    alert("非法进入，请先登陆");
+                    window.location.href='userLogin.html';
+                }else if(data=='003'){
+                    alert("回复失败");
+                }else{
                     document.getElementById("mlist").innerHTML=data;
                 }
             }

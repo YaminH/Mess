@@ -7,6 +7,7 @@
  */
 include "Controller/User.php";
 include "Controller/Mess.php";
+include "Controller/Rmess.php";
 include "Controller/Common.php";
 include "Controller/Db.php";
 include "Controller/Model.php";
@@ -53,6 +54,12 @@ class Test{
                 break;
             case 'res':   //回复编辑留言
                 $this->res_save();
+                break;
+            case 'sedrevsave':
+                $this->sedrevsave();
+                break;
+            case 'deleteRevMess':
+                $this->deleteRevMess();
                 break;
             case 'inform':
                 $this->inform();
@@ -171,32 +178,59 @@ class Test{
                     <div id='con_right_mid'>
                     <textarea class=\"form-control\" id=\"{$row['mess_id']}\" disabled='disabled' cols='80' rows='5'>{$mc}</textarea>";
                     if($_SESSION['user_id']==$row['user_id']){
-                        echo  "<div class=\"btn-group\" id='button_group'>                                
-                                <button type=\"button\" class=\"btn btn-default\" onclick=\"editMess({$row['mess_id']})\">编辑</button>
-                                <button type=\"button\" class=\"btn btn-default\" onclick=\"deleteMess({$row['mess_id']})\">删除</button>
+                        echo  "<div class=\"btn-group\" id='button_group'>  
+                                <a onclick=\"editMess({$row['mess_id']})\">  <span class=\"glyphicon glyphicon-pencil\"></span>  </a>
+                                <a onclick=\"deleteMess({$row['mess_id']})\" >  <span class=\"glyphicon glyphicon-trash\"></span> </a>
                             </div>
-                        </div>                    
-                        ";
+                        </div> ";
                     }
-                    $subsql="select ap_mess_content,ap_user_id,ap_user_name,creat_time from table_append_mess where ap_parent_id=:ap_parent_id";
+                    $subsql="select ap_mess_id,ap_mess_content,ap_user_id,ap_user_name,creat_time from table_append_mess where ap_parent_id=:ap_parent_id and pid=0";
                     $rs=Db::getDb()->prepare($subsql);
                     $rs->execute(array(':ap_parent_id'=>$row['mess_id']));
-                    foreach ($rs as $r){
-                        $aun=$r['ap_user_name'];
-                        $amc=$r['ap_mess_content'];
-                        echo"<div id='ap_mess' style=\"padding: 0px 50px 0px;\">
-                            <div id='ap_maess_user'>{$aun}<br/></div>
-                            <textarea class=\"form-control\"  readonly='readonly' cols='80' rows='1'>{$amc}</textarea>
+                    foreach ($rs as $r) {
+                        $aun = $r['ap_user_name'];
+                        $amc = $r['ap_mess_content'];
+                        echo "<div style=\"padding: 0px 50px 0px;\"><div>{$aun}<a onclick=\"sedrev({$row['mess_id']},{$r['ap_mess_id']})\"><span class=\"glyphicon glyphicon-share-alt\"></span></a>";
+                            if ($_SESSION['user_id']==$r['ap_user_id']){
+                                echo "<a onclick=\"deleteRevMess({$r['ap_mess_id']})\" > <span class=\"glyphicon glyphicon-trash\"></span> </a>";
+                            }
+                            echo "</div><textarea  class=\"form-control\"  readonly='readonly' cols='80' rows='1'>{$amc}</textarea>
+                            <div id='{$r['ap_mess_id']}'></div>
                         </div>";
+                        $pid=$r['ap_mess_id'];
+                        $parentId=$row['mess_id'];
+                        $this->loop($parentId,$pid,$aun);
                     }
                     echo "<div id='con_right_but' style=\"padding: 0px 50px 0px;\">
-                    回复：<textarea class=\"form-control\" id=\"ap_mess_content\"  name=\"res_content\" cols='50' rows='1'></textarea>
+                    回复：<textarea class=\"form-control\" id=\"rv{$row['mess_id']}\"  name=\"res_content\" cols='50' rows='1'></textarea>
                    <button class=\"btn btn-sm\" onclick=\"subRes({$row['mess_id']})\">提交</button>
                    </div>
                 </div>
             </div><br/>";
             }
             echo "<br/>当前为第<input id='curPage' value='{$curPage}'></input>页";
+        }
+    }
+
+    protected function loop($parentId,$pid,$aun){
+        $subsubsql="select ap_mess_id,ap_mess_content,ap_user_id,ap_user_name,creat_time from table_append_mess where pid=$pid";
+        $rsrs=Db::getDb()->prepare($subsubsql);
+        $rsrs->execute();
+        if($rsrs){
+            foreach ($rsrs as $rsr){
+                $namc=$rsr['ap_mess_content'];
+                $naun=$rsr['ap_user_name'];
+                echo "<div style=\"padding: 0px 70px 0px;\">
+                        <div>{$naun}回复{$aun}:<a onclick=\"sedrev($parentId,{$rsr['ap_mess_id']})\"><span class=\"glyphicon glyphicon-share-alt\"></span></a>";
+                if($_SESSION['user_id']==$rsr['ap_user_id']){
+                    echo "<a onclick=\"deleteRevMess({$rsr['ap_mess_id']})\" >  <span class=\"glyphicon glyphicon-trash\"></span> </a>";
+                }
+                echo "</div>
+                      <textarea class=\"form-control\"  readonly='readonly' cols='80' rows='1'>{$namc}</textarea>
+                      <div id='{$rsr['ap_mess_id']}'></div>
+              </div>";
+                $this->loop($parentId,$rsr['ap_mess_id'],$naun);
+            }
         }
     }
 
@@ -263,9 +297,12 @@ class Test{
 
     protected function res_save(){
         if (!empty($_POST)) {
-            $mess=new Mess();
-            $mess->setId($_POST['mess_id']);
-            $result=$mess->replyContent($_POST['ap_mess_content']);
+            $mess=new Rmess();
+            $mess->setContent($_POST['ap_mess_content']);
+            $mess->setParentId($_POST['mess_id']);
+            $result=$mess->postContent();
+//            $mess->setId($_POST['mess_id']);
+//            $result=$mess->replyContent($_POST['ap_mess_content']);
             if ($result['success']) {
                 $this->show();
             } else {
@@ -276,6 +313,40 @@ class Test{
         }
     }
 
+    protected function sedrevsave(){
+        if(!empty($_POST)){
+            $mess=new Rmess();
+            $mess->setContent($_POST['ap_mess_content']);
+            $mess->setParentId($_POST['parent_id']);
+            $result=$mess->postContent($_POST['mess_id']);
+//            $mess=new Mess();
+//            $mess->setId($_POST['parent_id']);
+//            $result=$mess->sedreplyContent($_POST['mess_id'],$_POST['ap_mess_content']);
+            if ($result['success']) {
+                $this->show();
+            } else {
+                echo '003';  //数据库插入失败
+            }
+        } else {
+            echo '001';  //非法进入
+        }
+    }
+
+    protected function deleteRevMess(){
+        if (!isset($_POST['mess_id'])) {
+            echo '001';   //非法进入
+        } else {
+            $mess_id = $_POST['mess_id'];
+            $mess=new Rmess();
+            $mess->setId($mess_id);
+            $result=$mess->deleteContent();
+            if($result['success']){
+                echo $this->show();
+            } else {
+                echo '003';   //删除失败
+            }
+        }
+    }
 
 }
 
